@@ -1,0 +1,20 @@
+{
+  "name": "request",
+  "version": "1.0.0",
+  "description": "",
+  "author": "winixt",
+  "license": "ISC",
+  "keywords": [],
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "lodash-es": "^4.17.21",
+    "typescript": "^4.9.5"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^0.35.3",
+    "eslint": "^8.35.0"
+  }
+}
