@@ -1,6 +1,6 @@
 import { isPlainObject } from 'lodash-es'
 
-export function isURLSearchParams(obj) {
+export function isURLSearchParams(obj: any) {
   return Object.prototype.toString.call(obj) === '[object URLSearchParams]'
 }
 
@@ -32,7 +32,7 @@ export function checkHttpRequestHasBody(method) {
   return HTTP_METHOD[method].request_body
 }
 
-export function trimObj(obj) {
+export function trimObj(obj: any) {
   if (isPlainObject(obj)) {
     Object.entries(obj).forEach(([key, value]) => {
       if (typeof value === 'string')

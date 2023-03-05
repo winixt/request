@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "target": "ES2016",
+        "module": "esnext",
+        "moduleResolution": "node",
+        "allowJs": false,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "newLine": "LF",
+        "lib": [
+            "esnext",
+            "dom"
+        ]
+    },
+    "include": [
+        "./src/**"
+    ]
+}

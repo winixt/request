@@ -1,17 +1,19 @@
-class Scheduler {
+import type { Context, Middleware } from './interface'
+
+export class Scheduler {
+  middlewares: Middleware[]
+
   constructor() {
     this.middlewares = []
   }
 
-  use(fn) {
-    if (typeof fn !== 'function')
-      throw new TypeError('middleware must be a function!')
+  use(fn: Middleware) {
     this.middlewares.push(fn)
     return this
   }
 
   compose() {
-    return (context, next) => {
+    return (ctx: Context, next?: () => Promise<void>) => {
       let index = -1
       const dispatch = (i: number) => {
         if (i <= index)
@@ -23,7 +25,7 @@ class Scheduler {
         if (!fn)
           return Promise.resolve()
         try {
-          return Promise.resolve(fn(context, dispatch.bind(null, i + 1)))
+          return Promise.resolve(fn(ctx, dispatch.bind(null, i + 1)))
         }
         catch (e) {
           return Promise.reject(e)
@@ -33,5 +35,3 @@ class Scheduler {
     }
   }
 }
-
-export default new Scheduler()

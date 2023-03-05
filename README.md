@@ -99,3 +99,7 @@ request('/url/abort', null, {
 // cancel the request
 controller.abort()
 ```
+
+## 后续计划
+
+1. 支持配置中间件
