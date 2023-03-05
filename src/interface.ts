@@ -1,12 +1,17 @@
-// TODO Config 支持所有 fetch 参数
-export interface Config {
+export interface CacheData {
+  cacheType?: 'ram' | 'session' | 'local'
+  cacheTime?: number
+}
+export interface Config extends RequestInit {
   baseURL?: string
   timeout?: number
   method?: string
+  mergeRequest?: boolean
   credentials?: 'include' | 'same-origin' | 'omit'
   headers?: {
     [key: string]: string
   }
+  cacheData?: boolean | CacheData
   transformParams: <T>(params: T) => T
   transformData: <T>(data: T) => T
 }
@@ -18,13 +23,13 @@ export interface Response {
 }
 
 export interface RequestError {
-  msg: string
-  type: string
   config: Config
+  msg?: string
+  type?: string
   response?: Response
 }
 
-export type ParamsType = string | Record<string, string> | Blob | File | FormData | ArrayBuffer | URLSearchParams | DataView
+export type ParamsType = string | Record<string, any> | Blob | File | FormData | ArrayBuffer | URLSearchParams | DataView
 
 export interface Context {
   url: string
@@ -35,5 +40,5 @@ export interface Context {
   error?: RequestError
 }
 
-export type Next = () => Promise<void>
-export type Middleware = (ctx: Context, next: Next) => Promise<void>
+export type NextFn = () => Promise<void>
+export type Middleware = (ctx: Context, next: NextFn) => Promise<void>

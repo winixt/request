@@ -4,7 +4,7 @@ export function isURLSearchParams(obj: any) {
   return Object.prototype.toString.call(obj) === '[object URLSearchParams]'
 }
 
-export function checkHttpRequestHasBody(method) {
+export function checkHttpRequestHasBody(method: string) {
   method = method.toUpperCase()
   const HTTP_METHOD = {
     GET: {

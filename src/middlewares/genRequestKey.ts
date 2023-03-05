@@ -1,6 +1,6 @@
 import { isPlainObject } from 'lodash-es'
 import { isURLSearchParams } from '../helpers'
-import type { Context, Next, ParamsType } from '../interface'
+import type { Context, NextFn, ParamsType } from '../interface'
 
 /**
  * 唯一定位一个请求（url, data | params, method）
@@ -19,7 +19,7 @@ const stringifyParams = (params: ParamsType) => {
   return ''
 }
 
-export default async function genRequestKey(ctx: Context, next: Next) {
+export default async function genRequestKey(ctx: Context, next: NextFn) {
   if (!ctx.params) {
     ctx.key = `${ctx.url}${ctx.config.method}`
   }

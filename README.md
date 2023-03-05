@@ -46,9 +46,7 @@ function  errorHandler(error) {
 
 ### 请求 merge
 
-假设有一个请求还没回来，就发起同一个请求（一次 or 多次）:
-    如果前一个请求成功，后续请求会直接用前一个请求的结果。
-    如果前一个请求失败，后一个请求继续发起。
+假设有一个请求还没回来，就发起同一个请求（一次 or 多次）, 后续请求会直接延用前一个请求的结果，不管成功还是失败。
 
 ```javascript
 let response1;
@@ -68,7 +66,7 @@ request('/url/merge', null, {
 
 ### 请求 cache
 
-配置，若 cache 传 true，则默认使用 ram 缓存类型，缓存时间 3min。
+配置，若 cache 传 true，则默认使用 ram 缓存类型，缓存时间 3min。也支持原生 fetch 的 cache 参数。
 ```javascript
 {
     cacheType: 'ram', // ram: 内存，session: sessionStorage，local：localStorage
@@ -84,8 +82,6 @@ request('/url/cache', null, {
     console.log('process response: ' + response);
 })
 ```
-
-> 原生 fetch cache 的参数改成 fetchCache
 
 ### 请求 abort
 

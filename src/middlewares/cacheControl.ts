@@ -1,5 +1,7 @@
 import { isPlainObject, isString } from 'lodash-es'
-import { checkHttpRequestHasBody, isURLSearchParams } from './helpers'
+import type { CacheData, Context, NextFn } from '../interface'
+import { isURLSearchParams } from '../helpers'
+
 /**
  * 缓存实现的功能
  * 1. 唯一定位一个请求（url, data | params, method）
@@ -9,7 +11,7 @@ import { checkHttpRequestHasBody, isURLSearchParams } from './helpers'
  * 2. 控制缓存内容的大小，localStorage 只有5M
  * 3. 控制缓存时间
  *      session(存在内存中)
- *      expireTime 存在localStoreage 中
+ *      expireTime 存在localStorage 中
  * 4. 成功的、且响应内容为json的请求进行缓存
  */
 
@@ -35,7 +37,7 @@ import { checkHttpRequestHasBody, isURLSearchParams } from './helpers'
  * 只缓存参数类型为: string、plain object、URLSearchParams 或者无参数的 请求
  */
 
-const CACHE_KEY_PREFIX = '__FES_REQUEST_CACHE:'
+const CACHE_KEY_PREFIX = '__REQUEST_CACHE:'
 const CACHE_TYPE = {
   ram: 'ram',
   session: 'sessionStorage',
@@ -43,19 +45,20 @@ const CACHE_TYPE = {
 }
 
 const CACHE_DATA_MAP = new Map()
+const DEFAULT_CACHE_TIME = 1000 * 60 * 3
 
-function genInnerKey(key, cacheType = 'ram') {
+function genInnerKey(key: string, cacheType = 'ram') {
   if (cacheType !== CACHE_TYPE.ram)
     return `${CACHE_KEY_PREFIX}${key}`
 
   return key
 }
 
-function canCache(data) {
-  return !data || isPlainObject(data) || isString(data) || Array.isArray(data) || isURLSearchParams(data)
+function canCache(data: any) {
+  return isPlainObject(data) || isString(data) || Array.isArray(data) || isURLSearchParams(data)
 }
 
-function setCacheData({ key, cacheType = 'ram', data, cacheTime = 1000 * 60 * 3 }) {
+function setCacheData({ key, cacheType = 'ram', data, cacheTime = DEFAULT_CACHE_TIME }) {
   const _key = genInnerKey(key, cacheType)
 
   const currentCacheData = {
@@ -65,7 +68,7 @@ function setCacheData({ key, cacheType = 'ram', data, cacheTime = 1000 * 60 * 3 
     expire: Date.now() + cacheTime,
   }
   if (cacheType !== CACHE_TYPE.ram) {
-    const cacheInstance = window[CACHE_TYPE[cacheType]]
+    const cacheInstance: any = window[CACHE_TYPE[cacheType]]
     try {
       cacheInstance.setItem(_key, JSON.stringify(currentCacheData))
     }
@@ -92,7 +95,7 @@ function isExpire({ expire, cacheTime }) {
 function getCacheData({ key, cacheType = 'ram' }) {
   const _key = genInnerKey(key, cacheType)
   if (cacheType !== CACHE_TYPE.ram) {
-    const cacheInstance = window[CACHE_TYPE[cacheType]]
+    const cacheInstance: any = window[CACHE_TYPE[cacheType]]
     const text = cacheInstance.getItem(_key) || null
     try {
       const currentCacheData = JSON.parse(text)
@@ -126,8 +129,8 @@ const cachingQueue = new Map()
  * 1. 如果上一次请求成功，直接使用上一次的请求结果
  * 2. 如果上一次请求失败，重启本次请求
  */
-function handleCachingStart(ctx, config) {
-  const _key = genInnerKey(ctx.key, config.cache.cacheType)
+function handleCachingStart(ctx: Context, cacheConfig: CacheData) {
+  const _key = genInnerKey(ctx.key, cacheConfig.cacheType)
   const caching = cacheStartFlag.get(_key)
   if (caching) {
     return new Promise((resolve) => {
@@ -139,9 +142,9 @@ function handleCachingStart(ctx, config) {
 }
 
 // 有请求成功的
-function handleCachingQueueSuccess(ctx, config) {
+function handleCachingQueueSuccess(ctx: Context, cacheConfig: CacheData) {
   // 移除首次缓存 flag
-  const _key = genInnerKey(ctx.key, config.cache.cacheType)
+  const _key = genInnerKey(ctx.key, cacheConfig.cacheType)
   const queue = cachingQueue.get(_key)
   if (queue && queue.length > 0) {
     queue.forEach((resolve) => {
@@ -155,8 +158,8 @@ function handleCachingQueueSuccess(ctx, config) {
 }
 
 // 处理请求失败
-function handleCachingQueueError(ctx, config) {
-  const _key = genInnerKey(ctx.key, config.cache.cacheType)
+function handleCachingQueueError(ctx: Context, cacheConfig: CacheData) {
+  const _key = genInnerKey(ctx.key, cacheConfig.cacheType)
   const queue = cachingQueue.get(_key)
   if (queue && queue.length > 0) {
     const firstResolve = queue.shift()
@@ -169,39 +172,63 @@ function handleCachingQueueError(ctx, config) {
   }
 }
 
-export default async (ctx, next) => {
+function applyRequestCache(ctx: Context) {
+  if (ctx.config.cacheData) {
+    if (ctx.key)
+      return true
+
+    console.warn(`request: ${ctx.url} 请求参数无法序列化，无法缓存，请移除相关配置`)
+    return false
+  }
+  return false
+}
+
+function getFormattedCache(ctx: Context): CacheData {
+  if (typeof ctx.config.cacheData === 'object')
+    return ctx.config.cacheData
+
+  return {
+    cacheType: 'ram',
+    cacheTime: DEFAULT_CACHE_TIME,
+  }
+}
+
+export default async (ctx: Context, next: NextFn) => {
   const { config } = ctx
-  if (config.cache) {
-    const cacheData = getCacheData({ key: ctx.key, cacheType: config.cache.cacheType })
+  if (applyRequestCache(ctx)) {
+    const cacheConfig = getFormattedCache(ctx)
+    const cacheData = getCacheData({ key: ctx.key, cacheType: cacheConfig.cacheType })
     if (cacheData) {
-      ctx.response = {
-        data: cacheData,
-      }
+      ctx.response = cacheData
       return
     }
-    const result = await handleCachingStart(ctx, config)
+    const result = await handleCachingStart(ctx, cacheConfig)
     if (result) {
       Object.keys(result).forEach((key) => {
         ctx[key] = result[key]
       })
       return
     }
-  }
-  await next()
 
-  if (config.cache) {
-    const requestData = checkHttpRequestHasBody(config.method) ? config.data : config.params
-    if (!ctx.error && ctx.response && canCache(requestData) && canCache(ctx.response.data)) {
-      handleCachingQueueSuccess(ctx, config)
+    await next()
+
+    if (!canCache(ctx.response))
+      console.warn(`request: ${ctx.url} 响应数据无法序列化，无法缓存，请移除相关配置`)
+
+    if (!ctx.error && ctx.response && canCache(ctx.response)) {
+      handleCachingQueueSuccess(ctx, cacheConfig)
 
       setCacheData({
         key: ctx.key,
-        data: ctx.response.data,
-        ...config.cache,
+        data: ctx.response,
+        ...cacheConfig,
       })
     }
     else {
-      handleCachingQueueError(ctx, config)
+      handleCachingQueueError(ctx, cacheConfig)
     }
+  }
+  else {
+    await next()
   }
 }
