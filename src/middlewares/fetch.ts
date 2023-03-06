@@ -26,8 +26,18 @@ const getFetchURL = (ctx: Context) => {
 
 const getFetchBody = (ctx: Context) => {
   if (checkHttpRequestHasBody(ctx.config.method)) {
-    if (isPlainObject(ctx.params))
+    const headers = new Headers(ctx.config.headers)
+
+    if (isPlainObject(ctx.params)) {
+      if (headers.get('Content-Type') === 'application/x-www-form-urlencoded') {
+        const formData = new FormData()
+        Object.keys(ctx.params).forEach((key) => {
+          formData.append(key, ctx.params[key])
+        })
+        return formData
+      }
       return JSON.stringify(ctx.params)
+    }
 
     return ctx.params as BodyInit
   }
