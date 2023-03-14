@@ -3,9 +3,9 @@ import { checkHttpRequestHasBody, isURLSearchParams } from '../helpers'
 import type { Context } from '../interface'
 
 const timeoutPromise = (timeout: number) => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     setTimeout(() => {
-      resolve({
+      reject({
         type: 'TIMEOUT',
         msg: '请求超时',
       })
@@ -43,18 +43,43 @@ const getFetchBody = (ctx: Context) => {
   }
 }
 
+const headersToObject = (headers: Headers) => {
+  const obj = {}
+  headers.forEach((value, key) => {
+    obj[key] = value
+  })
+
+  return obj
+}
+
 const requestPromise = (ctx: Context) => {
   return fetch(getFetchURL(ctx), {
     ...omit(ctx.config, ['baseURL', 'timeout', 'transformParams', 'transformData']),
     body: getFetchBody(ctx),
+  }).then((res) => {
+    if (res.ok) {
+      const contentType = res.headers.get('content-type')
+      if (contentType && contentType.includes('application/json')) {
+        return {
+          status: res.status,
+          data: res.json(),
+          headers: headersToObject(res.headers),
+        }
+      }
+      return res
+    }
+
+    return Promise.reject({
+      status: res.status,
+      headers: headersToObject(res.headers),
+    })
   })
 }
 
 export default async function fetchMiddleware(ctx: Context, next: () => Promise<void>) {
-  Promise.race([timeoutPromise(ctx.config.timeout), requestPromise(ctx)])
+  await Promise.race([timeoutPromise(ctx.config.timeout), requestPromise(ctx)])
     .then((res: any) => {
-      if (res.type === 'TIMEOUT')
-        ctx.error = res
+      ctx.response = res
     })
     .catch((error) => {
       ctx.error = error

@@ -16,13 +16,13 @@ export interface Config extends RequestInit {
   transformData: <T>(data: T) => T
 }
 
-export interface Response {
+export interface RequestResponse {
   status: number
   data: any
   headers: Record<string, string>
 }
 
-export interface RequestError {
+export interface RequestError extends TypeError {
   config: Config
   msg?: string
   type?: string
