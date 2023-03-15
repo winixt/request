@@ -9,10 +9,11 @@
         "isolatedModules": true,
         "skipLibCheck": true,
         "esModuleInterop": true,
+        "declaration": true,
         "newLine": "LF",
         "lib": [
             "esnext",
-            "dom"
+            "dom",
         ]
     },
     "include": [

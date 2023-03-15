@@ -1,21 +1,37 @@
 {
   "name": "request",
+  "type": "module",
   "version": "1.0.0",
   "description": "",
   "author": "winixt",
   "license": "ISC",
   "keywords": [],
-  "main": "index.js",
+  "main": "dist/request.js",
+  "module": "dist/request.js",
+  "files": [
+    "es",
+    "lib",
+    "dist"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "vite build",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "dependencies": {
     "@types/lodash-es": "^4.17.6",
-    "lodash-es": "^4.17.21",
-    "typescript": "^4.9.5"
+    "lodash-es": "^4.17.21"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^0.35.3",
-    "eslint": "^8.35.0"
-  }
+    "@jest/globals": "^29.5.0",
+    "@types/jest": "^29.4.2",
+    "@types/node": "^18.15.3",
+    "eslint": "^8.35.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.0.5",
+    "typescript": "^4.9.5",
+    "vite": "^4.1.4",
+    "vite-plugin-dts": "^2.1.0"
+  },
+  "typings": "./dist/index.d.ts"
 }

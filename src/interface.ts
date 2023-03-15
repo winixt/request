@@ -13,8 +13,8 @@ export interface Config extends RequestInit {
     [key: string]: string
   }
   cacheData?: boolean | CacheData
-  transformParams: <T>(params: T) => T
-  transformData: <T>(data: T) => T
+  transformParams?: <T>(params: T) => T
+  transformData?: <T>(data: T) => T
 }
 
 export interface RequestResponse {
