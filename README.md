@@ -4,12 +4,45 @@
 
 * timeout 请求超时
 * baseURL 默认 URL
-* transformRequest 响应数据转换
-* transformResponse 响应数据转换
+* transformParams 响应数据转换(注意需要兼容各种数据类型)
+* transformData 响应数据转换(注意需要兼容各种数据类型)
 * 请求取消
 * 重复请求拦截
 * 请求 merge
-* 请求 cache
+* 请求 cacheData
+
+> 目前触发了超时依旧会忘后端发送请求不会自动进行 abort
+
+## 配置
+
+```js
+{
+    // `baseURL` will be prepended to `url` unless `url` is absolute.
+    // It can be convenient to set `baseURL` for an instance of axios to pass relative URLs
+    // to methods of that instance.
+    baseURL: '',
+    timeout: 10000, // 默认 10s
+    method: 'POST', // 默认 post
+    mergeRequest: false, // 是否合并请求
+    responseType: null, // 可选 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData'，默认根据 content-type 处理
+    credentials:  'include', // 默认 include, 'include' | 'same-origin' | 'omit'
+    headers: {}, // 传给服务器的 header
+    cacheData: false, // 是否缓存
+    transformParams: (params) => {
+        if (isPlainObject(params)) {
+            return params
+        }
+        return params
+    },
+    transformData: (data) => {
+        if (isPlainObject(data)) {
+            return data
+        }
+        return data
+    }
+}
+```
+
 
 ## 用法
 
@@ -31,7 +64,6 @@ function  errorHandler(error) {
         console.log(msg);
     } else if (error.response) {
         // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
-        console.log(error.response.data);
         console.log(error.response.status);
         console.log(error.response.headers);
     } else {
@@ -64,9 +96,9 @@ request('/url/merge', null, {
 })
 ```
 
-### 请求 cache
+### 请求 cacheData
 
-配置，若 cache 传 true，则默认使用 ram 缓存类型，缓存时间 3min。也支持原生 fetch 的 cache 参数。
+配置，若 cacheData 传 true，则默认使用 ram 缓存类型，缓存时间 3min
 ```javascript
 {
     cacheType: 'ram', // ram: 内存，session: sessionStorage，local：localStorage
@@ -77,7 +109,7 @@ request('/url/merge', null, {
 ```javascript
 
 request('/url/cache', null, {
-    cache: true
+    cacheData: true
 }).then((response) => {
     console.log('process response: ' + response);
 })

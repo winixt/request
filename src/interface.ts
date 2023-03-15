@@ -7,6 +7,7 @@ export interface Config extends RequestInit {
   timeout?: number
   method?: string
   mergeRequest?: boolean
+  responseType?: 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData'
   credentials?: 'include' | 'same-origin' | 'omit'
   headers?: {
     [key: string]: string
@@ -22,8 +23,8 @@ export interface RequestResponse {
   headers: Record<string, string>
 }
 
-export interface RequestError extends TypeError {
-  config: Config
+export interface RequestError {
+  config?: Config
   msg?: string
   type?: string
   response?: Response

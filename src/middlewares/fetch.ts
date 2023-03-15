@@ -1,4 +1,4 @@
-import { isPlainObject, omit } from 'lodash-es'
+import { isFunction, isPlainObject, omit } from 'lodash-es'
 import { checkHttpRequestHasBody, isURLSearchParams } from '../helpers'
 import type { Context } from '../interface'
 
@@ -27,19 +27,22 @@ const getFetchURL = (ctx: Context) => {
 const getFetchBody = (ctx: Context) => {
   if (checkHttpRequestHasBody(ctx.config.method)) {
     const headers = new Headers(ctx.config.headers)
+    let params = ctx.params
+    if (isFunction(ctx.config.transformParams))
+      params = ctx.config.transformParams(ctx.params)
 
-    if (isPlainObject(ctx.params)) {
+    if (isPlainObject(params)) {
       if (headers.get('Content-Type') === 'application/x-www-form-urlencoded') {
         const formData = new FormData()
-        Object.keys(ctx.params).forEach((key) => {
-          formData.append(key, ctx.params[key])
+        Object.keys(params).forEach((key) => {
+          formData.append(key, params[key])
         })
         return formData
       }
-      return JSON.stringify(ctx.params)
+      return JSON.stringify(params)
     }
 
-    return ctx.params as BodyInit
+    return params as BodyInit
   }
 }
 
@@ -54,24 +57,41 @@ const headersToObject = (headers: Headers) => {
 
 const requestPromise = (ctx: Context) => {
   return fetch(getFetchURL(ctx), {
-    ...omit(ctx.config, ['baseURL', 'timeout', 'transformParams', 'transformData']),
+    ...omit(ctx.config, ['baseURL', 'timeout', 'transformParams', 'transformData', 'responseType']),
     body: getFetchBody(ctx),
   }).then((res) => {
     if (res.ok) {
       const contentType = res.headers.get('content-type')
-      if (contentType && contentType.includes('application/json')) {
-        return {
-          status: res.status,
-          data: res.json(),
-          headers: headersToObject(res.headers),
-        }
+      let data
+      if (/application\/json/i.test(contentType) || ctx.config.responseType === 'json')
+        data = res.json()
+      else if (/text|xml/.test(contentType) || ctx.config.responseType === 'text')
+        data = res.text()
+      else if (ctx.config.responseType === 'arrayBuffer')
+        data = res.arrayBuffer()
+      else if (ctx.config.responseType === 'formData')
+        data = res.formData()
+      else if (ctx.config.responseType === 'blob')
+        data = res.blob()
+      else
+        data = res.blob()
+
+      if (isFunction(ctx.config.transformData))
+        data = ctx.config.transformData(data)
+
+      return {
+        status: res.status,
+        data,
+        headers: headersToObject(res.headers),
       }
-      return res
     }
 
     return Promise.reject({
-      status: res.status,
-      headers: headersToObject(res.headers),
+      config: ctx.config,
+      response: {
+        status: res.status,
+        headers: headersToObject(res.headers),
+      },
     })
   })
 }
