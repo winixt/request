@@ -17,29 +17,29 @@
 ## 配置
 
 ```js
-{
-    // `baseURL` will be prepended to `url` unless `url` is absolute.
-    // It can be convenient to set `baseURL` for an instance of axios to pass relative URLs
-    // to methods of that instance.
-    baseURL: '',
-    timeout: 10000, // 默认 10s
-    method: 'POST', // 默认 post
-    mergeRequest: false, // 是否合并请求
-    responseType: null, // 可选 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData'，默认根据 content-type 处理
-    credentials:  'include', // 默认 include, 'include' | 'same-origin' | 'omit'
-    headers: {}, // 传给服务器的 header
-    cacheData: false, // 是否缓存
-    requestInterceptors: [],
-    responseInterceptors: [],
-    transformData: (data) => {
-        if (isPlainObject(data)) {
-            return data
-        }
-        return data
-    },
-    errorHandler: (err) => {
-        console.log(err);
-    }
+const config = {
+  // `baseURL` will be prepended to `url` unless `url` is absolute.
+  // It can be convenient to set `baseURL` for an instance of axios to pass relative URLs
+  // to methods of that instance.
+  baseURL: '',
+  timeout: 10000, // 默认 10s
+  method: 'POST', // 默认 post
+  mergeRequest: false, // 是否合并请求
+  responseType: null, // 可选 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData'，默认根据 content-type 处理
+  credentials: 'include', // 默认 include, 'include' | 'same-origin' | 'omit'
+  headers: {}, // 传给服务器的 header
+  cacheData: false, // 是否缓存
+  requestInterceptors: [],
+  responseInterceptors: [],
+  transformData: (data) => {
+    if (isPlainObject(data))
+      return data
+
+    return data
+  },
+  errorHandler: (err) => {
+    console.log(err)
+  }
 }
 ```
 
@@ -58,7 +58,7 @@ const request = createRequest({
 
 
 ```javascript
-function  errorHandler(error) {
+function errorHandler(error) {
     // request 内部逻辑异常 | transform 抛出的异常 | 超时异常
     if (error.msg) {
         console.log(msg);

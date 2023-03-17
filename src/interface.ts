@@ -17,7 +17,7 @@ export interface Config extends RequestInit {
     [key: string]: string
   }
   cacheData?: boolean | CacheData
-  transformData?: <T>(data: T) => T
+  transformData?: (data: any) => any
   errorHandler?: (error: any) => void
 }
 

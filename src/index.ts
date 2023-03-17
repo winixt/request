@@ -2,6 +2,7 @@ import { Scheduler } from './scheduler'
 
 import methodMiddleware from './middlewares/method'
 import paramsMiddleware from './middlewares/params'
+import formatURL from './middlewares/formatURL'
 import genRequestKey from './middlewares/genRequestKey'
 import preventRepeatReq from './middlewares/preventRepeatReq'
 import cacheControl from './middlewares/cacheControl'
@@ -16,9 +17,9 @@ export function createRequest(config?: Partial<Config>) {
     ...config,
   }
   const scheduler = new Scheduler()
-  const request = scheduler.use(methodMiddleware).use(paramsMiddleware).use(genRequestKey).use(cacheControl).use(preventRepeatReq).use(fetchMiddleware).compose()
+  const request = scheduler.use(methodMiddleware).use(formatURL).use(paramsMiddleware).use(genRequestKey).use(cacheControl()).use(preventRepeatReq()).use(fetchMiddleware).compose()
 
-  return (url: string, data?: ParamsType, options?: Partial<Config>) => {
+  return (url: string, data?: ParamsType | null, options?: Partial<Config>) => {
     const ctx: Context = {
       config: {
         url,

@@ -1,70 +1,72 @@
 import type { Context, NextFn } from '../interface'
 
-const requestMap = new Map()
+export default () => {
+  const requestMap = new Map()
 
-const mergeRequestMap = new Map()
-const requestQueue = new Map()
+  const mergeRequestMap = new Map()
+  const requestQueue = new Map()
 
-function handleCachingStart(ctx: Context) {
-  const isRequesting = mergeRequestMap.get(ctx.key)
-  if (isRequesting) {
-    return new Promise((resolve) => {
-      const queue = requestQueue.get(ctx.key) || []
-      requestQueue.set(ctx.key, queue.concat(resolve))
-    })
+  function handleCachingStart(ctx: Context) {
+    const isRequesting = mergeRequestMap.get(ctx.key)
+    if (isRequesting) {
+      return new Promise((resolve) => {
+        const queue = requestQueue.get(ctx.key) || []
+        requestQueue.set(ctx.key, queue.concat(resolve))
+      })
+    }
+    mergeRequestMap.set(ctx.key, true)
   }
-  mergeRequestMap.set(ctx.key, true)
-}
 
-function handleRepeatRequest(ctx: Context) {
-  const queue = requestQueue.get(ctx.key)
-  if (queue && queue.length > 0) {
-    queue.forEach((resolve) => {
-      if (ctx.error) {
-        resolve({
-          error: ctx.error,
-        })
+  function handleRepeatRequest(ctx: Context) {
+    const queue = requestQueue.get(ctx.key)
+    if (queue && queue.length > 0) {
+      queue.forEach((resolve) => {
+        if (ctx.error) {
+          resolve({
+            error: ctx.error,
+          })
+        }
+        else {
+          resolve({
+            response: ctx.response,
+          })
+        }
+      })
+    }
+    requestQueue.delete(ctx.key)
+    mergeRequestMap.delete(ctx.key)
+  }
+
+  return async (ctx: Context, next: NextFn) => {
+    if (ctx.key) {
+      if (ctx.config.mergeRequest) {
+        const result = await handleCachingStart(ctx)
+        if (result) {
+          Object.keys(result).forEach((key) => {
+            ctx[key] = result[key]
+          })
+          return
+        }
       }
       else {
-        resolve({
-          response: ctx.response,
-        })
-      }
-    })
-  }
-  requestQueue.delete(ctx.key)
-  mergeRequestMap.delete(ctx.key)
-}
-
-export default async (ctx: Context, next: NextFn) => {
-  if (ctx.key) {
-    if (ctx.config.mergeRequest) {
-      const result = await handleCachingStart(ctx)
-      if (result) {
-        Object.keys(result).forEach((key) => {
-          ctx[key] = result[key]
-        })
-        return
-      }
-    }
-    else {
-      if (requestMap.get(ctx.key) && !ctx.config.mergeRequest) {
-        ctx.error = {
-          type: 'REPEAT',
-          msg: '重复请求',
+        if (requestMap.get(ctx.key) && !ctx.config.mergeRequest) {
+          ctx.error = {
+            type: 'REPEAT',
+            msg: '重复请求',
+          }
+          return
         }
-        return
+        requestMap.set(ctx.key, true)
       }
-      requestMap.set(ctx.key, true)
     }
-  }
 
-  await next()
+    await next()
 
-  if (ctx.key) {
-    if (ctx.config.mergeRequest)
-      handleRepeatRequest(ctx)
-    else
-      requestMap.delete(ctx.key)
+    if (ctx.key) {
+      if (ctx.config.mergeRequest)
+        handleRepeatRequest(ctx)
+      else
+        requestMap.delete(ctx.key)
+    }
   }
 }

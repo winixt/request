@@ -14,7 +14,7 @@ const timeoutPromise = (timeout: number) => {
 }
 
 const getFetchURL = (ctx: Context) => {
-  if (!checkHttpRequestHasBody(ctx.config.method) && isPlainObject(ctx.config.params)) {
+  if (!checkHttpRequestHasBody(ctx.config.method)) {
     if (isURLSearchParams(ctx.config.params))
       return `${ctx.config.url}?${ctx.config.params.toString()}`
 
