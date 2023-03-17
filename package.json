@@ -1,8 +1,8 @@
 {
-  "name": "request",
+  "name": "@qlin/request",
   "type": "module",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.1.0",
+  "description": "fetch 封装",
   "author": "winixt",
   "license": "ISC",
   "keywords": [],

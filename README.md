@@ -30,7 +30,7 @@ const config = {
   headers: {}, // 传给服务器的 header
   cacheData: false, // 是否缓存
   requestInterceptor: (config: Config) => Config,
-  responseInterceptor: (config: Config) => Config,
+  responseInterceptor: (response: RequestResponse) => RequestResponse,
   transformData: (data) => {
     if (isPlainObject(data))
       return data
