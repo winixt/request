@@ -8,7 +8,7 @@ import preventRepeatReq from './middlewares/preventRepeatReq'
 import cacheControl from './middlewares/cacheControl'
 import fetchMiddleware from './middlewares/fetch'
 
-import type { Config, Context, ParamsType } from './interface'
+import type { Config, Context, ParamsType, RequestResponse } from './interface'
 
 export function createRequest(config?: Partial<Config>) {
   const defaultConfig: Partial<Config> = {
@@ -19,7 +19,7 @@ export function createRequest(config?: Partial<Config>) {
   const scheduler = new Scheduler()
   const request = scheduler.use(methodMiddleware).use(formatURL).use(paramsMiddleware).use(genRequestKey).use(cacheControl()).use(preventRepeatReq()).use(fetchMiddleware).compose()
 
-  return (url: string, data?: ParamsType | null, options?: Partial<Config>) => {
+  return async (url: string, data?: ParamsType | null, options?: Partial<Config>) => {
     const ctx: Context = {
       config: {
         url,
@@ -28,6 +28,18 @@ export function createRequest(config?: Partial<Config>) {
         ...options,
       },
     }
+
+    if (options?.requestInterceptor)
+      ctx.config = await options.requestInterceptor(ctx.config, defaultConfig.requestInterceptor)
+    else if (defaultConfig.requestInterceptor)
+      ctx.config = await defaultConfig.requestInterceptor(ctx.config)
+
+    if (options?.responseInterceptor) {
+      ctx.config.responseInterceptor = (response: RequestResponse) => {
+        return options.responseInterceptor(response, defaultConfig.responseInterceptor)
+      }
+    }
+
     return request(ctx).then(async () => {
       if (ctx.response)
         return ctx.response

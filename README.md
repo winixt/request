@@ -4,8 +4,8 @@
 
 * timeout 请求超时
 * baseURL 默认 URL
-* requestInterceptors 请求拦截器
-* responseInterceptors 响应拦截器
+* requestInterceptor 请求拦截器
+* responseInterceptor 响应拦截器
 * transformData 响应数据转换(注意需要兼容各种数据类型)
 * 请求取消
 * 重复请求拦截
@@ -29,8 +29,8 @@ const config = {
   credentials: 'include', // 默认 include, 'include' | 'same-origin' | 'omit'
   headers: {}, // 传给服务器的 header
   cacheData: false, // 是否缓存
-  requestInterceptors: [],
-  responseInterceptors: [],
+  requestInterceptor: (config: Config) => Config,
+  responseInterceptor: (config: Config) => Config,
   transformData: (data) => {
     if (isPlainObject(data))
       return data

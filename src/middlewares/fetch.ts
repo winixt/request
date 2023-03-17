@@ -55,7 +55,7 @@ const headersToObject = (headers: Headers) => {
 
 const requestPromise = (ctx: Context) => {
   return fetch(getFetchURL(ctx), {
-    ...omit(ctx.config, ['baseURL', 'timeout', 'transformData', 'errorHandler', 'responseType']),
+    ...omit(ctx.config, ['baseURL', 'timeout', 'requestInterceptor', 'responseInterceptor', 'transformData', 'errorHandler', 'responseType']),
     body: getFetchBody(ctx),
   }).then(async (res) => {
     if (res.ok) {
@@ -74,14 +74,18 @@ const requestPromise = (ctx: Context) => {
       else
         data = await res.blob()
 
-      if (isFunction(ctx.config.transformData))
-        data = await ctx.config.transformData(data)
-
-      return {
+      let response = {
         status: res.status,
         data,
         headers: headersToObject(res.headers),
       }
+      if (ctx.config.responseInterceptor)
+        response = await ctx.config.responseInterceptor(response)
+
+      if (isFunction(ctx.config.transformData))
+        response.data = await ctx.config.transformData(data)
+
+      return response
     }
 
     return Promise.reject({

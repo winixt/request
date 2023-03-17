@@ -17,6 +17,8 @@ export interface Config extends RequestInit {
     [key: string]: string
   }
   cacheData?: boolean | CacheData
+  requestInterceptor?: (config: Config, defaultInterceptor?: (config: Config) => Config) => Config
+  responseInterceptor?: (response: RequestResponse, defaultInterceptor?: (response: RequestResponse) => RequestResponse) => RequestResponse
   transformData?: (data: any) => any
   errorHandler?: (error: any) => void
 }

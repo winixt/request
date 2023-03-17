@@ -14,6 +14,7 @@
     "dist"
   ],
   "scripts": {
+    "release": "npm run test && npm run build",
     "build": "vite build",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
