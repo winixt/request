@@ -2,7 +2,11 @@ export interface CacheData {
   cacheType?: 'ram' | 'session' | 'local'
   cacheTime?: number
 }
+
+export type ParamsType = string | Record<string, any> | Blob | File | FormData | ArrayBuffer | URLSearchParams | DataView
 export interface Config extends RequestInit {
+  url: string
+  params?: ParamsType
   baseURL?: string
   timeout?: number
   method?: string
@@ -13,8 +17,8 @@ export interface Config extends RequestInit {
     [key: string]: string
   }
   cacheData?: boolean | CacheData
-  transformParams?: <T>(params: T) => T
   transformData?: <T>(data: T) => T
+  errorHandler?: (error: any) => void
 }
 
 export interface RequestResponse {
@@ -27,17 +31,13 @@ export interface RequestError {
   config?: Config
   msg?: string
   type?: string
-  response?: Response
+  response?: RequestResponse
 }
 
-export type ParamsType = string | Record<string, any> | Blob | File | FormData | ArrayBuffer | URLSearchParams | DataView
-
 export interface Context {
-  url: string
   config: Config
   key?: string
-  params?: ParamsType
-  response?: Response
+  response?: RequestResponse
   error?: RequestError
 }
 

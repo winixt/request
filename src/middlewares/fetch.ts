@@ -14,22 +14,20 @@ const timeoutPromise = (timeout: number) => {
 }
 
 const getFetchURL = (ctx: Context) => {
-  if (!checkHttpRequestHasBody(ctx.config.method) && isPlainObject(ctx.params)) {
-    if (isURLSearchParams(ctx.params))
-      return `${ctx.url}?${ctx.params.toString()}`
+  if (!checkHttpRequestHasBody(ctx.config.method) && isPlainObject(ctx.config.params)) {
+    if (isURLSearchParams(ctx.config.params))
+      return `${ctx.config.url}?${ctx.config.params.toString()}`
 
-    if (isPlainObject(ctx.params))
-      return `${ctx.url}?${new URLSearchParams(ctx.params as any).toString()}`
+    if (isPlainObject(ctx.config.params))
+      return `${ctx.config.url}?${new URLSearchParams(ctx.config.params as any).toString()}`
   }
-  return ctx.url
+  return ctx.config.url
 }
 
 const getFetchBody = (ctx: Context) => {
   if (checkHttpRequestHasBody(ctx.config.method)) {
     const headers = new Headers(ctx.config.headers)
-    let params = ctx.params
-    if (isFunction(ctx.config.transformParams))
-      params = ctx.config.transformParams(ctx.params)
+    const params = ctx.config.params
 
     if (isPlainObject(params)) {
       if (headers.get('Content-Type') === 'application/x-www-form-urlencoded') {
@@ -57,27 +55,27 @@ const headersToObject = (headers: Headers) => {
 
 const requestPromise = (ctx: Context) => {
   return fetch(getFetchURL(ctx), {
-    ...omit(ctx.config, ['baseURL', 'timeout', 'transformParams', 'transformData', 'responseType']),
+    ...omit(ctx.config, ['baseURL', 'timeout', 'transformData', 'errorHandler', 'responseType']),
     body: getFetchBody(ctx),
-  }).then((res) => {
+  }).then(async (res) => {
     if (res.ok) {
       const contentType = res.headers.get('content-type')
       let data
       if (/application\/json/i.test(contentType) || ctx.config.responseType === 'json')
-        data = res.json()
+        data = await res.json()
       else if (/text|xml/.test(contentType) || ctx.config.responseType === 'text')
-        data = res.text()
+        data = await res.text()
       else if (ctx.config.responseType === 'arrayBuffer')
-        data = res.arrayBuffer()
+        data = await res.arrayBuffer()
       else if (ctx.config.responseType === 'formData')
-        data = res.formData()
+        data = await res.formData()
       else if (ctx.config.responseType === 'blob')
-        data = res.blob()
+        data = await res.blob()
       else
-        data = res.blob()
+        data = await res.blob()
 
       if (isFunction(ctx.config.transformData))
-        data = ctx.config.transformData(data)
+        data = await ctx.config.transformData(data)
 
       return {
         status: res.status,
@@ -87,7 +85,6 @@ const requestPromise = (ctx: Context) => {
     }
 
     return Promise.reject({
-      config: ctx.config,
       response: {
         status: res.status,
         headers: headersToObject(res.headers),

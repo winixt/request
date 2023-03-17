@@ -1,7 +1,8 @@
-/** @type {import('ts-jest').JestConfigWithTsJest} */
-module.exports = {
-  preset: 'ts-jest',
-  extensionsToTreatAsEsm: ['.ts'],
+import type { JestConfigWithTsJest } from 'ts-jest'
+
+const jestConfig: JestConfigWithTsJest = {
+  // [...]
+  preset: 'ts-jest/presets/default-esm', // or other ESM presets
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
@@ -15,5 +16,6 @@ module.exports = {
       },
     ],
   },
-  testEnvironment: 'node',
 }
+
+export default jestConfig

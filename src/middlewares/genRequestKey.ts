@@ -20,13 +20,13 @@ const stringifyParams = (params: ParamsType) => {
 }
 
 export default async function genRequestKey(ctx: Context, next: NextFn) {
-  if (!ctx.params) {
-    ctx.key = `${ctx.url}${ctx.config.method}`
+  if (!ctx.config.params) {
+    ctx.key = `${ctx.config.url}${ctx.config.method}`
   }
   else {
-    const result = stringifyParams(ctx.params)
+    const result = stringifyParams(ctx.config.params)
     if (result)
-      ctx.key = `${ctx.url}${result}${ctx.config.method}`
+      ctx.key = `${ctx.config.url}${result}${ctx.config.method}`
   }
 
   await next()

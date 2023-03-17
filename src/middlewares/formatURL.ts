@@ -5,8 +5,8 @@ function isAbsoluteURL(url: string) {
 }
 
 export default async (ctx: Context, next: NextFn) => {
-  if (ctx.config.baseURL && !isAbsoluteURL(ctx.url))
-    ctx.url = `${ctx.config.baseURL}/${ctx.url}`.replace(/\/{2,}/, '/')
+  if (ctx.config.baseURL && !isAbsoluteURL(ctx.config.url))
+    ctx.config.url = `${ctx.config.baseURL}/${ctx.config.url}`.replace(/\/{2,}/, '/')
 
   await next()
 }

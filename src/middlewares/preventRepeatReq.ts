@@ -52,7 +52,6 @@ export default async (ctx: Context, next: NextFn) => {
         ctx.error = {
           type: 'REPEAT',
           msg: '重复请求',
-          config: ctx.config,
         }
         return
       }

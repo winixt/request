@@ -4,7 +4,8 @@
 
 * timeout 请求超时
 * baseURL 默认 URL
-* transformParams 响应数据转换(注意需要兼容各种数据类型)
+* requestInterceptors 请求拦截器
+* responseInterceptors 响应拦截器
 * transformData 响应数据转换(注意需要兼容各种数据类型)
 * 请求取消
 * 重复请求拦截
@@ -28,17 +29,16 @@
     credentials:  'include', // 默认 include, 'include' | 'same-origin' | 'omit'
     headers: {}, // 传给服务器的 header
     cacheData: false, // 是否缓存
-    transformParams: (params) => {
-        if (isPlainObject(params)) {
-            return params
-        }
-        return params
-    },
+    requestInterceptors: [],
+    responseInterceptors: [],
     transformData: (data) => {
         if (isPlainObject(data)) {
             return data
         }
         return data
+    },
+    errorHandler: (err) => {
+        console.log(err);
     }
 }
 ```

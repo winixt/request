@@ -177,7 +177,7 @@ function applyRequestCache(ctx: Context) {
     if (ctx.key)
       return true
 
-    console.warn(`request: ${ctx.url} 请求参数无法序列化，无法缓存，请移除相关配置`)
+    console.warn(`request: ${ctx.config.url} 请求参数无法序列化，无法缓存，请移除相关配置`)
     return false
   }
   return false
@@ -213,7 +213,7 @@ export default async (ctx: Context, next: NextFn) => {
     await next()
 
     if (!canCache(ctx.response))
-      console.warn(`request: ${ctx.url} 响应数据无法序列化，无法缓存，请移除相关配置`)
+      console.warn(`request: ${ctx.config.url} 响应数据无法序列化，无法缓存，请移除相关配置`)
 
     if (!ctx.error && ctx.response && canCache(ctx.response)) {
       handleCachingQueueSuccess(ctx, cacheConfig)
