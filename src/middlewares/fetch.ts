@@ -83,7 +83,7 @@ const requestPromise = (ctx: Context) => {
         response = await ctx.config.responseInterceptor(response)
 
       if (isFunction(ctx.config.transformData))
-        response.data = await ctx.config.transformData(data)
+        response.data = await ctx.config.transformData(data, response)
 
       return response
     }

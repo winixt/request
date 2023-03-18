@@ -10,6 +10,8 @@ import fetchMiddleware from './middlewares/fetch'
 
 import type { Config, Context, ParamsType, RequestResponse } from './interface'
 
+export * from './interface'
+
 export function createRequest(config?: Partial<Config>) {
   const defaultConfig: Partial<Config> = {
     timeout: 10000,
