@@ -5,7 +5,14 @@
   "description": "fetch 封装",
   "author": "winixt",
   "license": "ISC",
-  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/winixt/request.git"
+  },
+  "keywords": [
+    "fetch",
+    "request"
+  ],
   "main": "dist/request.js",
   "module": "dist/request.js",
   "files": [
