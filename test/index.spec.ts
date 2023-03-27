@@ -1,8 +1,8 @@
 import { createRequest } from '../src/index'
 
 describe('baseURL test', () => {
-  global.fetch = (input: RequestInfo | URL, init?: RequestInit | undefined) => {
-    const response = new Response(JSON.stringify({ url: input }), {
+  global.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
+    const response = new Response(JSON.stringify({ url: input, headers: init?.headers }), {
       status: 200,
       headers: {
         'content-type': 'application/json',
@@ -71,7 +71,16 @@ describe('common param test', () => {
       headers: { 'Content-Type': 'application/json' },
     })
     expect(content.data.headers).toEqual({
-      'Content-Type': 'application/json',
+      'content-type': 'application/json',
+    })
+  })
+
+  test('form headers', async () => {
+    const formData = new FormData()
+    formData.append('filename', 'test.pnd')
+    const content = await request('/test', formData)
+    expect(content.data.headers).toEqual({
+      'content-type': 'application/x-www-form-urlencoded',
     })
   })
 

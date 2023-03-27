@@ -26,11 +26,10 @@ const getFetchURL = (ctx: Context) => {
 
 const getFetchBody = (ctx: Context) => {
   if (checkHttpRequestHasBody(ctx.config.method)) {
-    const headers = new Headers(ctx.config.headers)
     const params = ctx.config.params
 
     if (isPlainObject(params)) {
-      if (headers.get('Content-Type') === 'application/x-www-form-urlencoded') {
+      if (ctx.reqHeaders.get('Content-Type') === 'application/x-www-form-urlencoded') {
         const formData = new FormData()
         Object.keys(params).forEach((key) => {
           formData.append(key, params[key])
@@ -56,6 +55,7 @@ const headersToObject = (headers: Headers) => {
 const requestPromise = (ctx: Context) => {
   return fetch(getFetchURL(ctx), {
     ...omit(ctx.config, ['baseURL', 'timeout', 'requestInterceptor', 'responseInterceptor', 'transformData', 'errorHandler', 'responseType']),
+    headers: headersToObject(ctx.reqHeaders),
     body: getFetchBody(ctx),
   }).then(async (res) => {
     if (res.ok) {

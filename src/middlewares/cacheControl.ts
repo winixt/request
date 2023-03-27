@@ -1,5 +1,5 @@
 import { isPlainObject, isString } from 'lodash-es'
-import type { CacheData, Context, NextFn } from '../interface'
+import type { CacheConfig, Context, NextFn } from '../interface'
 import { isURLSearchParams } from '../helpers'
 
 /**
@@ -52,7 +52,7 @@ function genInnerKey(key: string, cacheType = 'ram') {
   return key
 }
 
-function getFormattedCache(ctx: Context): CacheData {
+function getFormattedCache(ctx: Context): CacheConfig {
   if (typeof ctx.config.cacheData === 'object')
     return ctx.config.cacheData
 
@@ -73,8 +73,44 @@ function isExpire({ expire, cacheTime }) {
   return true
 }
 
+interface CacheData {
+  cacheType: string
+  data: any
+  cacheTime: number
+  expire: number
+}
+
+class RamCache {
+  data: Map<string, CacheData>
+  constructor() {
+    this.data = new Map()
+  }
+
+  get(key: string) {
+    return this.data.get(key)
+  }
+
+  set(key: string, value: CacheData) {
+    // 超时清理数据
+    this.data.forEach((value, key, map) => {
+      if (isExpire(value))
+        map.delete(key)
+    })
+    if (this.data.size > 1000) {
+      console.warn('Request: raw cache is exceed 1000 item, please check cache size')
+      return
+    }
+
+    this.data.set(key, value)
+  }
+
+  delete(key: string) {
+    this.data.delete(key)
+  }
+}
+
 export default () => {
-  const CACHE_DATA_MAP = new Map()
+  const rawCacheImpl = new RamCache()
 
   function setCacheData({ key, cacheType = 'ram', data, cacheTime = DEFAULT_CACHE_TIME }) {
     const _key = genInnerKey(key, cacheType)
@@ -99,7 +135,7 @@ export default () => {
       }
     }
     else {
-      CACHE_DATA_MAP.set(_key, currentCacheData)
+      rawCacheImpl.set(_key, currentCacheData)
     }
   }
 
@@ -122,11 +158,11 @@ export default () => {
       }
     }
     else {
-      const currentCacheData = CACHE_DATA_MAP.get(_key)
+      const currentCacheData = rawCacheImpl.get(_key)
       if (currentCacheData && !isExpire(currentCacheData))
         return currentCacheData.data
 
-      CACHE_DATA_MAP.delete(_key)
+      rawCacheImpl.delete(_key)
       return null
     }
   }
@@ -140,7 +176,7 @@ export default () => {
  * 1. 如果上一次请求成功，直接使用上一次的请求结果
  * 2. 如果上一次请求失败，重启本次请求
  */
-  function handleCachingStart(ctx: Context, cacheConfig: CacheData) {
+  function handleCachingStart(ctx: Context, cacheConfig: CacheConfig) {
     const _key = genInnerKey(ctx.key, cacheConfig.cacheType)
     const caching = cacheStartFlag.get(_key)
     if (caching) {
@@ -153,7 +189,7 @@ export default () => {
   }
 
   // 有请求成功的
-  function handleCachingQueueSuccess(ctx: Context, cacheConfig: CacheData) {
+  function handleCachingQueueSuccess(ctx: Context, cacheConfig: CacheConfig) {
   // 移除首次缓存 flag
     const _key = genInnerKey(ctx.key, cacheConfig.cacheType)
     const queue = cachingQueue.get(_key)
@@ -169,7 +205,7 @@ export default () => {
   }
 
   // 处理请求失败
-  function handleCachingQueueError(ctx: Context, cacheConfig: CacheData) {
+  function handleCachingQueueError(ctx: Context, cacheConfig: CacheConfig) {
     const _key = genInnerKey(ctx.key, cacheConfig.cacheType)
     const queue = cachingQueue.get(_key)
     if (queue && queue.length > 0) {
