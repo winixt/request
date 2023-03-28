@@ -87,7 +87,12 @@ class RamCache {
   }
 
   get(key: string) {
-    return this.data.get(key)
+    const result = this.data.get(key)
+    if (result && isExpire(result)) {
+      this.data.delete(key)
+      return null
+    }
+    return result ? result.data : null
   }
 
   set(key: string, value: CacheData) {
@@ -158,12 +163,7 @@ export default () => {
       }
     }
     else {
-      const currentCacheData = rawCacheImpl.get(_key)
-      if (currentCacheData && !isExpire(currentCacheData))
-        return currentCacheData.data
-
-      rawCacheImpl.delete(_key)
-      return null
+      return rawCacheImpl.get(_key)
     }
   }
 
