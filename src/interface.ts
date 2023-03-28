@@ -1,4 +1,4 @@
-export interface CacheData {
+export interface CacheConfig {
   cacheType?: 'ram' | 'session' | 'local'
   cacheTime?: number
 }
@@ -16,10 +16,10 @@ export interface Config extends RequestInit {
   headers?: {
     [key: string]: string
   }
-  cacheData?: boolean | CacheData
+  cacheData?: boolean | CacheConfig
   requestInterceptor?: (config: Config, defaultInterceptor?: (config: Config) => Config) => Config
   responseInterceptor?: (response: RequestResponse, defaultInterceptor?: (response: RequestResponse) => RequestResponse) => RequestResponse
-  transformData?: (data: any) => any
+  transformData?: (data: any, response: RequestResponse) => any
   errorHandler?: (error: any) => void
 }
 
@@ -40,6 +40,7 @@ export interface Context {
   config: Config
   key?: string
   response?: RequestResponse
+  reqHeaders?: Headers
   error?: RequestError
 }
 
