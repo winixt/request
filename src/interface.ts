@@ -12,10 +12,6 @@ export interface Config extends RequestInit {
   method?: string
   mergeRequest?: boolean
   responseType?: 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData'
-  credentials?: 'include' | 'same-origin' | 'omit'
-  headers?: {
-    [key: string]: string
-  }
   cacheData?: boolean | CacheConfig
   requestInterceptor?: (config: Config, defaultInterceptor?: (config: Config) => Config) => Config
   responseInterceptor?: (response: RequestResponse, defaultInterceptor?: (response: RequestResponse) => RequestResponse) => RequestResponse
