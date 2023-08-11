@@ -9,7 +9,6 @@ export interface Config extends RequestInit {
   params?: ParamsType
   baseURL?: string
   timeout?: number
-  method?: string
   mergeRequest?: boolean
   responseType?: 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData'
   cacheData?: boolean | CacheConfig
