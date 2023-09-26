@@ -29,7 +29,7 @@ const getFetchBody = (ctx: Context) => {
     const params = ctx.config.params
 
     if (isPlainObject(params)) {
-      if (ctx.reqHeaders.get('Content-Type') === 'application/x-www-form-urlencoded') {
+      if (['application/x-www-form-urlencoded', 'multipart/form-data'].includes(ctx.reqHeaders.get('Content-Type'))) {
         const formData = new FormData()
         Object.keys(params).forEach((key) => {
           formData.append(key, params[key])
