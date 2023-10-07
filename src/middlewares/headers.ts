@@ -13,10 +13,7 @@ export default async (ctx: Context, next: NextFn) => {
   ctx.reqHeaders = new Headers(ctx.config.headers)
   if (!ctx.reqHeaders.has('Content-Type')) {
     if (ctx.config.params instanceof FormData) {
-      if (hasBlob(ctx.config.params))
-        ctx.reqHeaders.set('Content-Type', 'multipart/form-data')
-
-      else
+      if (!hasBlob(ctx.config.params))
         ctx.reqHeaders.set('Content-Type', 'application/x-www-form-urlencoded')
     }
 
