@@ -5,8 +5,8 @@ export interface CacheConfig {
 
 export type ParamsType = string | Record<string, any> | Blob | File | FormData | ArrayBuffer | URLSearchParams | DataView
 
-export type RequestInterceptor = (config: Config, defaultInterceptor?: RequestInterceptor) => Promise<Config>
-export type ResponseInterceptor = (response: RequestResponse, defaultInterceptor?: ResponseInterceptor) => Promise<RequestResponse>
+export type RequestInterceptor = (config: Config, defaultInterceptor?: RequestInterceptor) => Promise<Config> | Config
+export type ResponseInterceptor = (response: RequestResponse, defaultInterceptor?: ResponseInterceptor) => Promise<RequestResponse> | RequestResponse
 export interface Config extends RequestInit {
   url: string
   params?: ParamsType
