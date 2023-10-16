@@ -79,7 +79,7 @@ const requestPromise = (ctx: Context) => {
         data,
         headers: headersToObject(res.headers),
       }
-      if (ctx.config.responseInterceptor)
+      if (typeof ctx.config.responseInterceptor === 'function')
         response = await ctx.config.responseInterceptor(response)
 
       if (isFunction(ctx.config.transformData))

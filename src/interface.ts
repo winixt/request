@@ -4,6 +4,9 @@ export interface CacheConfig {
 }
 
 export type ParamsType = string | Record<string, any> | Blob | File | FormData | ArrayBuffer | URLSearchParams | DataView
+
+export type RequestInterceptor = (config: Config, defaultInterceptor?: RequestInterceptor) => Promise<Config>
+export type ResponseInterceptor = (response: RequestResponse, defaultInterceptor?: ResponseInterceptor) => Promise<RequestResponse>
 export interface Config extends RequestInit {
   url: string
   params?: ParamsType
@@ -12,8 +15,8 @@ export interface Config extends RequestInit {
   mergeRequest?: boolean
   responseType?: 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData'
   cacheData?: boolean | CacheConfig
-  requestInterceptor?: (config: Config, defaultInterceptor?: (config: Config) => Config) => Config
-  responseInterceptor?: (response: RequestResponse, defaultInterceptor?: (response: RequestResponse) => RequestResponse) => RequestResponse
+  requestInterceptor?: RequestInterceptor | RequestInterceptor[]
+  responseInterceptor?: ResponseInterceptor | ResponseInterceptor[]
   transformData?: (data: any, response: RequestResponse) => any
   errorHandler?: (error: any) => void
 }

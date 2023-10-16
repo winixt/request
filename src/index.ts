@@ -9,9 +9,44 @@ import preventRepeatReq from './middlewares/preventRepeatReq'
 import cacheControl from './middlewares/cacheControl'
 import fetchMiddleware from './middlewares/fetch'
 
-import type { Config, Context, ParamsType, RequestResponse } from './interface'
+import type { Config, Context, ParamsType, RequestInterceptor, RequestResponse, ResponseInterceptor } from './interface'
 
 export * from './interface'
+
+function interceptorToArray<T>(interceptor: T | T[]) {
+  let fns: T[] = []
+
+  if (typeof interceptor === 'function')
+    fns = [interceptor]
+
+  else if (Array.isArray(interceptor))
+    fns = interceptor
+  return fns
+}
+
+function formatRequestInterceptor(requestInterceptor?: RequestInterceptor | RequestInterceptor[]) {
+  const fns = interceptorToArray<RequestInterceptor>(requestInterceptor)
+
+  return async (config: Config, preRequestInterceptor?: RequestInterceptor) => {
+    let result = config
+    for (const fn of fns)
+      result = await fn(result, preRequestInterceptor)
+
+    return result
+  }
+}
+
+function formatResponseInterceptor(interceptor?: ResponseInterceptor | ResponseInterceptor[]) {
+  const fns = interceptorToArray<ResponseInterceptor>(interceptor)
+
+  return async (res: RequestResponse, preInterceptor?: ResponseInterceptor) => {
+    let result = res
+    for (const fn of fns)
+      result = await fn(result, preInterceptor)
+
+    return result
+  }
+}
 
 export function createRequest(config?: Partial<Config>) {
   const defaultConfig: Partial<Config> = {
@@ -22,6 +57,8 @@ export function createRequest(config?: Partial<Config>) {
   const scheduler = new Scheduler()
   const request = scheduler.use(methodMiddleware).use(formatURL).use(headersMiddleware).use(paramsMiddleware).use(genRequestKey).use(cacheControl()).use(preventRepeatReq()).use(fetchMiddleware).compose()
 
+  const defaultRequestInterceptor = formatRequestInterceptor(defaultConfig.requestInterceptor)
+  const defaultResponseInterceptor = formatResponseInterceptor(defaultConfig.responseInterceptor)
   return async (url: string, data?: ParamsType | null, options?: Partial<Config>) => {
     const ctx: Context = {
       config: {
@@ -33,13 +70,14 @@ export function createRequest(config?: Partial<Config>) {
     }
 
     if (options?.requestInterceptor)
-      ctx.config = await options.requestInterceptor(ctx.config, defaultConfig.requestInterceptor)
+      ctx.config = await formatRequestInterceptor(options.requestInterceptor)(ctx.config, defaultRequestInterceptor)
     else if (defaultConfig.requestInterceptor)
-      ctx.config = await defaultConfig.requestInterceptor(ctx.config)
+      ctx.config = await defaultRequestInterceptor(ctx.config)
 
     if (options?.responseInterceptor) {
       ctx.config.responseInterceptor = (response: RequestResponse) => {
-        return options.responseInterceptor(response, defaultConfig.responseInterceptor)
+        const interceptor = formatResponseInterceptor(options.responseInterceptor)
+        return interceptor(response, defaultResponseInterceptor)
       }
     }
 

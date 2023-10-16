@@ -29,8 +29,8 @@ const config = {
   credentials: 'include', // 默认 include, 'include' | 'same-origin' | 'omit'
   headers: {}, // 传给服务器的 header
   cacheData: false, // 是否缓存
-  requestInterceptor: (config: Config) => Config,
-  responseInterceptor: (response: RequestResponse) => RequestResponse,
+  requestInterceptor: (config: Config) => Config || [],
+  responseInterceptor: (response: RequestResponse) => RequestResponse || [],
   transformData: (data) => {
     if (isPlainObject(data))
       return data
