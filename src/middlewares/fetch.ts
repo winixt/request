@@ -15,11 +15,14 @@ const timeoutPromise = (timeout: number) => {
 
 const getFetchURL = (ctx: Context) => {
   if (!checkHttpRequestHasBody(ctx.config.method)) {
+    let paramsStr: string
     if (isURLSearchParams(ctx.config.params))
-      return `${ctx.config.url}?${ctx.config.params.toString()}`
+      paramsStr = ctx.config.params.toString()
 
     if (isPlainObject(ctx.config.params))
-      return `${ctx.config.url}?${new URLSearchParams(ctx.config.params as any).toString()}`
+      paramsStr = new URLSearchParams(ctx.config.params as any).toString()
+
+    return paramsStr ? `${ctx.config.url}?${paramsStr}` : ctx.config.url
   }
   return ctx.config.url
 }
