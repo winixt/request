@@ -61,6 +61,9 @@ const requestPromise = (ctx: Context) => {
     headers: headersToObject(ctx.reqHeaders),
     body: getFetchBody(ctx),
   }).then(async (res) => {
+    if (res.type === 'opaqueredirect')
+      location.href = res.url
+
     if (res.ok) {
       const contentType = res.headers.get('content-type')
       let data
