@@ -59,7 +59,7 @@ export function createRequest(config?: Partial<Config>) {
 
   const defaultRequestInterceptor = formatRequestInterceptor(defaultConfig.requestInterceptor)
   const defaultResponseInterceptor = formatResponseInterceptor(defaultConfig.responseInterceptor)
-  return async <T = RequestResponse>(url: string, data?: ParamsType | null, options?: Partial<Config>): Promise<T> => {
+  return async <T = any>(url: string, data?: ParamsType | null, options?: Partial<Config>): Promise<RequestResponse<T>> => {
     const ctx: Context = {
       config: {
         url,
@@ -83,7 +83,7 @@ export function createRequest(config?: Partial<Config>) {
 
     return request(ctx).then(async () => {
       if (ctx.response)
-        return ctx.response as T
+        return ctx.response
       if (!ctx.error.config)
         ctx.error.config = ctx.config
 

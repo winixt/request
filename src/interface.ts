@@ -21,9 +21,9 @@ export interface Config extends RequestInit {
   errorHandler?: (error: any) => void
 }
 
-export interface RequestResponse {
+export interface RequestResponse<T = any> {
   status: number
-  data: any
+  data: T
   headers: Record<string, string>
 }
 
