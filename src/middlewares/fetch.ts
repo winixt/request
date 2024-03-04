@@ -56,6 +56,10 @@ const headersToObject = (headers: Headers) => {
 }
 
 const requestPromise = (ctx: Context) => {
+  const omitKeys = ['baseURL', 'timeout', 'requestInterceptor', 'responseInterceptor', 'transformData', 'errorHandler', 'responseType']
+  if (typeof ctx.config.cache !== 'string')
+    omitKeys.push('cache')
+
   return fetch(getFetchURL(ctx), {
     ...omit(ctx.config, ['baseURL', 'timeout', 'requestInterceptor', 'responseInterceptor', 'transformData', 'errorHandler', 'responseType']),
     headers: headersToObject(ctx.reqHeaders),

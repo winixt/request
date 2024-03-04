@@ -56,6 +56,9 @@ function getFormattedCache(ctx: Context): CacheConfig {
   if (typeof ctx.config.cacheData === 'object')
     return ctx.config.cacheData
 
+  if (typeof ctx.config.cache === 'object')
+    return ctx.config.cache
+
   return {
     cacheType: 'ram',
     cacheTime: DEFAULT_CACHE_TIME,
@@ -220,7 +223,7 @@ export default () => {
   }
 
   function applyRequestCache(ctx: Context) {
-    if (ctx.config.cacheData) {
+    if (ctx.config.cacheData || (ctx.config.cache && typeof ctx.config.cache !== 'string')) {
       if (ctx.key)
         return true
 
