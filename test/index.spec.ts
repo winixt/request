@@ -80,8 +80,21 @@ describe('common param test', () => {
     formData.append('filename', 'test.pnd')
     const content = await request('/test', formData)
     expect(content.data.headers).toEqual({
-      'content-type': 'application/x-www-form-urlencoded',
+      'content-type': 'multipart/form-data',
     })
+  })
+
+  test('urlencoded', async () => {
+    const data = {
+      a: 1,
+      b: 2,
+    }
+    const content = await request('/test', data, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    })
+    expect(content.data.body).toEqual('a=1&b=2')
   })
 
   test('timeout 200', async () => {

@@ -14,7 +14,7 @@ export default async (ctx: Context, next: NextFn) => {
   if (!ctx.reqHeaders.has('Content-Type')) {
     if (ctx.config.params instanceof FormData) {
       if (!hasBlob(ctx.config.params))
-        ctx.reqHeaders.set('Content-Type', 'application/x-www-form-urlencoded')
+        ctx.reqHeaders.set('Content-Type', 'multipart/form-data')
     }
 
     else if (isPlainObject(ctx.config.params)) {

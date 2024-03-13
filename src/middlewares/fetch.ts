@@ -32,7 +32,14 @@ const getFetchBody = (ctx: Context) => {
     const params = ctx.config.params
 
     if (isPlainObject(params)) {
-      if (['application/x-www-form-urlencoded', 'multipart/form-data'].includes(ctx.reqHeaders.get('Content-Type'))) {
+      if (ctx.reqHeaders.get('Content-Type') === 'application/x-www-form-urlencoded') {
+        const searchParams = new URLSearchParams()
+        Object.keys(params).forEach((key) => {
+          searchParams.set(key, params[key])
+        })
+        return searchParams.toString()
+      }
+      else if (ctx.reqHeaders.get('Content-Type') === 'multipart/form-data') {
         const formData = new FormData()
         Object.keys(params).forEach((key) => {
           formData.append(key, params[key])
