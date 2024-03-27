@@ -17,6 +17,8 @@ export interface Config extends RequestInit {
   cacheData?: boolean | CacheConfig
   requestInterceptor?: RequestInterceptor | RequestInterceptor[]
   responseInterceptor?: ResponseInterceptor | ResponseInterceptor[]
+  requestInterceptors?: RequestInterceptor | RequestInterceptor[]
+  responseInterceptors?: ResponseInterceptor | ResponseInterceptor[]
   transformData?: (data: any, response: RequestResponse) => any
   errorHandler?: (error: any) => void
 }

@@ -39,6 +39,9 @@ function formatRequestInterceptor(requestInterceptor?: RequestInterceptor | Requ
 function formatResponseInterceptor(interceptor?: ResponseInterceptor | ResponseInterceptor[]) {
   const fns = interceptorToArray<ResponseInterceptor>(interceptor)
 
+  if (fns.length === 0)
+    return null
+
   return async (res: RequestResponse, preInterceptor?: ResponseInterceptor) => {
     let result = res
     for (const fn of fns)
@@ -46,6 +49,14 @@ function formatResponseInterceptor(interceptor?: ResponseInterceptor | ResponseI
 
     return result
   }
+}
+
+function getRequestInterceptor(config: Partial<Config> = {}) {
+  return config.requestInterceptor || config.requestInterceptors
+}
+
+function getResponseInterceptor(config: Partial<Config> = {}) {
+  return config.responseInterceptor || config.responseInterceptors
 }
 
 export function createRequest(config?: Partial<Config>) {
@@ -57,8 +68,8 @@ export function createRequest(config?: Partial<Config>) {
   const scheduler = new Scheduler()
   const request = scheduler.use(methodMiddleware).use(formatURL).use(headersMiddleware).use(paramsMiddleware).use(genRequestKey).use(cacheControl()).use(preventRepeatReq()).use(fetchMiddleware).compose()
 
-  const defaultRequestInterceptor = formatRequestInterceptor(defaultConfig.requestInterceptor)
-  const defaultResponseInterceptor = formatResponseInterceptor(defaultConfig.responseInterceptor)
+  const defaultRequestInterceptor = formatRequestInterceptor(getRequestInterceptor(defaultConfig))
+  const defaultResponseInterceptor = formatResponseInterceptor(getResponseInterceptor(defaultConfig))
   return async <T = any>(url: string, data?: ParamsType | null, options?: Partial<Config>): Promise<RequestResponse<T>> => {
     const ctx: Context = {
       config: {
@@ -69,16 +80,22 @@ export function createRequest(config?: Partial<Config>) {
       },
     }
 
-    if (options?.requestInterceptor)
-      ctx.config = await formatRequestInterceptor(options.requestInterceptor)(ctx.config, defaultRequestInterceptor)
-    else if (defaultConfig.requestInterceptor)
+    if (getRequestInterceptor(options))
+      ctx.config = await formatRequestInterceptor(getRequestInterceptor(options))(ctx.config, defaultRequestInterceptor)
+    else if (getRequestInterceptor(defaultConfig))
       ctx.config = await defaultRequestInterceptor(ctx.config)
 
-    if (options?.responseInterceptor) {
+    if (getResponseInterceptor(options)) {
       ctx.config.responseInterceptor = (response: RequestResponse) => {
-        const interceptor = formatResponseInterceptor(options.responseInterceptor)
+        const interceptor = formatResponseInterceptor(getResponseInterceptor(options))
         return interceptor(response, defaultResponseInterceptor)
       }
+    }
+    else if (defaultResponseInterceptor) {
+      ctx.config.responseInterceptor = defaultResponseInterceptor
+    }
+    else {
+      ctx.config.responseInterceptor = null
     }
 
     return request(ctx).then(async () => {
