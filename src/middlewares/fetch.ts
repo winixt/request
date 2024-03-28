@@ -62,6 +62,20 @@ const headersToObject = (headers: Headers) => {
   return obj
 }
 
+function getResponseType(ctx: Context, contentType: string) {
+  if (ctx.config.responseType)
+    return ctx.config.responseType
+
+  if (/application\/json/i.test(contentType))
+    return 'json'
+  else if (/text|xml/.test(contentType))
+    return 'text'
+  else if (/application\/octet-stream/i.test(contentType))
+    return 'blob'
+
+  return 'blob'
+}
+
 const requestPromise = (ctx: Context) => {
   const omitKeys = ['baseURL', 'timeout', 'requestInterceptor', 'requestInterceptors', 'responseInterceptor', 'responseInterceptors', 'transformData', 'errorHandler', 'responseType']
   if (typeof ctx.config.cache !== 'string')
@@ -77,17 +91,19 @@ const requestPromise = (ctx: Context) => {
 
     if (res.ok) {
       const contentType = res.headers.get('content-type')
+      const dataType = getResponseType(ctx, contentType)
       let data
-      if (/application\/json/i.test(contentType) || ctx.config.responseType === 'json')
+
+      if (dataType === 'json')
         data = await res.json()
-      else if (/text|xml/.test(contentType) || ctx.config.responseType === 'text')
+      else if (dataType === 'text')
         data = await res.text()
-      else if (ctx.config.responseType === 'arrayBuffer')
-        data = await res.arrayBuffer()
-      else if (ctx.config.responseType === 'formData')
-        data = await res.formData()
-      else if (ctx.config.responseType === 'blob')
+      else if (dataType === 'blob')
         data = await res.blob()
+      else if (dataType === 'arrayBuffer')
+        data = await res.arrayBuffer()
+      else if (dataType === 'formData')
+        data = await res.formData()
       else
         data = await res.blob()
 
