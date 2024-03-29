@@ -80,32 +80,38 @@ export function createRequest(config?: Partial<Config>) {
       },
     }
 
-    if (getRequestInterceptor(options))
-      ctx.config = await formatRequestInterceptor(getRequestInterceptor(options))(ctx.config, defaultRequestInterceptor)
-    else if (getRequestInterceptor(defaultConfig))
-      ctx.config = await defaultRequestInterceptor(ctx.config)
+    try {
+      if (getRequestInterceptor(options))
+        ctx.config = await formatRequestInterceptor(getRequestInterceptor(options))(ctx.config, defaultRequestInterceptor)
+      else if (getRequestInterceptor(defaultConfig))
+        ctx.config = await defaultRequestInterceptor(ctx.config)
 
-    if (getResponseInterceptor(options)) {
-      ctx.config.responseInterceptor = (response: RequestResponse) => {
-        const interceptor = formatResponseInterceptor(getResponseInterceptor(options))
-        return interceptor(response, defaultResponseInterceptor)
+      if (getResponseInterceptor(options)) {
+        ctx.config.responseInterceptor = (response: RequestResponse) => {
+          const interceptor = formatResponseInterceptor(getResponseInterceptor(options))
+          return interceptor(response, defaultResponseInterceptor)
+        }
       }
-    }
-    else if (defaultResponseInterceptor) {
-      ctx.config.responseInterceptor = defaultResponseInterceptor
-    }
-    else {
-      ctx.config.responseInterceptor = null
-    }
+      else if (defaultResponseInterceptor) {
+        ctx.config.responseInterceptor = defaultResponseInterceptor
+      }
+      else {
+        ctx.config.responseInterceptor = null
+      }
 
-    return request(ctx).then(async () => {
-      if (ctx.response)
-        return ctx.response
-      if (!ctx.error.config)
-        ctx.error.config = ctx.config
+      return request(ctx).then(async () => {
+        if (ctx.response)
+          return ctx.response
+        if (!ctx.error.config)
+          ctx.error.config = ctx.config
 
-      ctx.config.errorHandler?.(ctx.error)
-      return Promise.reject(ctx.error)
-    })
+        ctx.config.errorHandler?.(ctx.error)
+        return Promise.reject(ctx.error)
+      })
+    }
+    catch (err) {
+      ctx.config.errorHandler?.(err)
+      throw err
+    }
   }
 }
