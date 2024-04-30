@@ -1,6 +1,6 @@
 import { isFunction, isPlainObject, omit } from 'lodash-es'
 import { checkHttpRequestHasBody, isURLSearchParams } from '../helpers'
-import type { Context } from '../interface'
+import type { Context, RequestResponse } from '../interface'
 
 const timeoutPromise = (timeout: number) => {
   return new Promise((resolve, reject) => {
@@ -107,10 +107,11 @@ const requestPromise = (ctx: Context) => {
       else
         data = await res.blob()
 
-      let response = {
+      let response: RequestResponse = {
         status: res.status,
         data,
         headers: headersToObject(res.headers),
+        config: ctx.config,
       }
       if (typeof ctx.config.responseInterceptor === 'function')
         response = await ctx.config.responseInterceptor(response)

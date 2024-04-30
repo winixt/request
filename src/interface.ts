@@ -27,6 +27,7 @@ export interface RequestResponse<T = any> {
   status: number
   data: T
   headers: Record<string, string>
+  config: Config
 }
 
 export interface RequestError {
