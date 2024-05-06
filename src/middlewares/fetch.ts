@@ -107,19 +107,12 @@ const requestPromise = (ctx: Context) => {
       else
         data = await res.blob()
 
-      let response: RequestResponse = {
+      return {
         status: res.status,
         data,
         headers: headersToObject(res.headers),
         config: ctx.config,
       }
-      if (typeof ctx.config.responseInterceptor === 'function')
-        response = await ctx.config.responseInterceptor(response)
-
-      if (isFunction(ctx.config.transformData))
-        response.data = await ctx.config.transformData(data, response)
-
-      return response
     }
 
     return Promise.reject({
@@ -133,7 +126,13 @@ const requestPromise = (ctx: Context) => {
 
 export default async function fetchMiddleware(ctx: Context, next: () => Promise<void>) {
   await Promise.race([timeoutPromise(ctx.config.timeout), requestPromise(ctx)])
-    .then((res: any) => {
+    .then(async (res: RequestResponse) => {
+      if (typeof ctx.config.responseInterceptor === 'function')
+        res = await ctx.config.responseInterceptor(res)
+
+      if (isFunction(ctx.config.transformData))
+        res.data = await ctx.config.transformData(res.data, res)
+
       ctx.response = res
     })
     .catch((error) => {
