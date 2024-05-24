@@ -1,7 +1,7 @@
 {
   "name": "@qlin/request",
   "type": "module",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "fetch 封装",
   "author": "winixt",
   "license": "ISC",
