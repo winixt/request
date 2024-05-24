@@ -76,6 +76,33 @@ function getResponseType(ctx: Context, contentType: string) {
   return 'blob'
 }
 
+async function getResponseData(ctx: Context, res: Response) {
+  try {
+    const contentType = res.headers.get('content-type')
+    const dataType = getResponseType(ctx, contentType)
+    let data
+
+    if (dataType === 'json')
+      data = await res.json()
+    else if (dataType === 'text')
+      data = await res.text()
+    else if (dataType === 'blob')
+      data = await res.blob()
+    else if (dataType === 'arrayBuffer')
+      data = await res.arrayBuffer()
+    else if (dataType === 'formData')
+      data = await res.formData()
+    else
+      data = await res.blob()
+
+    return data
+  }
+  catch (err) {
+    console.warn(err)
+    return null
+  }
+}
+
 const requestPromise = (ctx: Context) => {
   const omitKeys = ['baseURL', 'timeout', 'requestInterceptor', 'requestInterceptors', 'responseInterceptor', 'responseInterceptors', 'transformData', 'errorHandler', 'responseType']
   if (typeof ctx.config.cache !== 'string')
@@ -90,26 +117,9 @@ const requestPromise = (ctx: Context) => {
       location.href = res.url
 
     if (res.ok) {
-      const contentType = res.headers.get('content-type')
-      const dataType = getResponseType(ctx, contentType)
-      let data
-
-      if (dataType === 'json')
-        data = await res.json()
-      else if (dataType === 'text')
-        data = await res.text()
-      else if (dataType === 'blob')
-        data = await res.blob()
-      else if (dataType === 'arrayBuffer')
-        data = await res.arrayBuffer()
-      else if (dataType === 'formData')
-        data = await res.formData()
-      else
-        data = await res.blob()
-
       return {
         status: res.status,
-        data,
+        data: await getResponseData(ctx, res),
         headers: headersToObject(res.headers),
         config: ctx.config,
       }
@@ -118,7 +128,9 @@ const requestPromise = (ctx: Context) => {
     return Promise.reject({
       response: {
         status: res.status,
+        data: await getResponseData(ctx, res),
         headers: headersToObject(res.headers),
+        config: ctx.config,
       },
     })
   })

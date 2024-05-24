@@ -34,7 +34,7 @@ describe('errorHandle test', () => {
 
   test('response data error', async () => {
     global.fetch = (input: RequestInfo | URL, init?: RequestInit | undefined) => {
-      const response = new Response(JSON.stringify({ code: 1000, msg: '业务异常' }), {
+      const response = new Response(JSON.stringify({ code: 1000, msg: '业务异常 500' }), {
         status: 500,
         headers: {
           'content-type': 'application/json',
@@ -53,6 +53,7 @@ describe('errorHandle test', () => {
     }
     catch (err) {
       expect(err.response.status).toBe(500)
+      expect(err.response.data.msg).toBe('业务异常 500')
     }
   })
 
