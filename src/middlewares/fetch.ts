@@ -77,8 +77,8 @@ function getResponseType(ctx: Context, contentType: string) {
 }
 
 async function getResponseData(ctx: Context, res: Response) {
+  const contentType = res.headers.get('content-type')
   try {
-    const contentType = res.headers.get('content-type')
     const dataType = getResponseType(ctx, contentType)
     let data
 
@@ -98,8 +98,7 @@ async function getResponseData(ctx: Context, res: Response) {
     return data
   }
   catch (err) {
-    console.warn(err)
-    return null
+    throw new Error(`response body parsing failed: ${err.message}`)
   }
 }
 
