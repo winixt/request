@@ -48,6 +48,9 @@ const getFetchBody = (ctx: Context) => {
       }
       return JSON.stringify(params)
     }
+    else if (Array.isArray(params)) {
+      return JSON.stringify(params)
+    }
 
     return params as BodyInit
   }
