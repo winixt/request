@@ -1,6 +1,7 @@
 export interface CacheConfig {
   cacheType?: 'ram' | 'session' | 'local'
   cacheTime?: number
+  force?: boolean
 }
 
 export type ParamsType = string | Record<string, any> | Blob | File | FormData | ArrayBuffer | URLSearchParams | DataView

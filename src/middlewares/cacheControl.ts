@@ -169,6 +169,16 @@ export default () => {
       return rawCacheImpl.get(_key)
     }
   }
+  function clearCacheData({ key, cacheType = 'ram' }) {
+    const _key = genInnerKey(key, cacheType)
+    if (cacheType !== CACHE_TYPE.ram) {
+      const cacheInstance: any = window[CACHE_TYPE[cacheType]]
+      cacheInstance.removeItem(_key)
+    }
+    else {
+      return rawCacheImpl.delete(_key)
+    }
+  }
 
   // 存储缓存队列
   const cacheStartFlag = new Map()
@@ -236,11 +246,18 @@ export default () => {
   return async (ctx: Context, next: NextFn) => {
     if (applyRequestCache(ctx)) {
       const cacheConfig = getFormattedCache(ctx)
-      const cacheData = getCacheData({ key: ctx.key, cacheType: cacheConfig.cacheType })
-      if (cacheData) {
-        ctx.response = cacheData
-        return
+      // 强刷缓存
+      if (cacheConfig.force) {
+        clearCacheData({ key: ctx.key, cacheType: cacheConfig.cacheType })
       }
+      else {
+        const cacheData = getCacheData({ key: ctx.key, cacheType: cacheConfig.cacheType })
+        if (cacheData) {
+          ctx.response = cacheData
+          return
+        }
+      }
+
       const result = await handleCachingStart(ctx, cacheConfig)
       if (result) {
         Object.keys(result).forEach((key) => {
