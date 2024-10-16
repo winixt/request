@@ -138,8 +138,51 @@ const requestPromise = (ctx: Context) => {
   })
 }
 
+function raceToSuccess(promises) {
+  return new Promise((resolve, reject) => {
+    const results = []
+
+    // 用于跟踪同时完成的 promise
+    const settledPromises = promises.map(p =>
+      p.then(
+        (value: any) => {
+          const result = { status: 'fulfilled', value }
+          results.push(result)
+          return result
+        },
+        (reason: any) => {
+          const result = { status: 'rejected', reason }
+          results.push(result)
+          return result
+        },
+      ),
+    )
+
+    // 监听第一个完成的 promise, 不能直接用 Promise.race, 因为 js 事件循环种，如果多个 promise 在一个事件周期中一起完成，会优先调用 reject
+    Promise.race(settledPromises).then(async (firstResult) => {
+      if (firstResult.status === 'fulfilled') {
+        resolve(firstResult.value)
+      }
+      else {
+        if (firstResult.reason?.type === 'TIMEOUT') {
+          setTimeout(() => {
+            const successRst = results.find(item => item.status === 'fulfilled')
+            if (successRst)
+              resolve(firstResult.value)
+            else
+              reject(firstResult.reason)
+          })
+        }
+        else {
+          reject(firstResult.reason)
+        }
+      }
+    })
+  })
+}
+
 export default async function fetchMiddleware(ctx: Context, next: () => Promise<void>) {
-  await Promise.race([requestPromise(ctx), timeoutPromise(ctx.config.timeout)])
+  await raceToSuccess([requestPromise(ctx), timeoutPromise(ctx.config.timeout)])
     .then(async (res: RequestResponse) => {
       if (typeof ctx.config.responseInterceptor === 'function')
         res = await ctx.config.responseInterceptor(res)
