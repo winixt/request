@@ -139,7 +139,7 @@ const requestPromise = (ctx: Context) => {
 }
 
 export default async function fetchMiddleware(ctx: Context, next: () => Promise<void>) {
-  await Promise.race([timeoutPromise(ctx.config.timeout), requestPromise(ctx)])
+  await Promise.race([requestPromise(ctx), timeoutPromise(ctx.config.timeout)])
     .then(async (res: RequestResponse) => {
       if (typeof ctx.config.responseInterceptor === 'function')
         res = await ctx.config.responseInterceptor(res)
