@@ -49,13 +49,9 @@ export default () => {
         }
       }
       else {
-        if (requestMap.get(ctx.key) && !ctx.config.mergeRequest) {
-          ctx.error = {
-            type: 'REPEAT',
-            msg: '重复请求',
-          }
-          return
-        }
+        if (requestMap.get(ctx.key) && !ctx.config.mergeRequest)
+          console.warn('[request]: 重复请求, 可通过 mergeRequest 参数优化', ctx.config)
+
         requestMap.set(ctx.key, true)
       }
     }

@@ -25,4 +25,17 @@ describe('prevent repeat request test', () => {
     await Promise.all([request('/test'), request('/test')])
     expect(requestCount).toBe(1)
   })
+
+  test('mergeRequest', async () => {
+    let requestCount = 0
+    const request = createRequest({
+      baseURL: '/api',
+      transformData(data) {
+        data.count = requestCount++
+        return data
+      },
+    })
+    await Promise.all([request('/test'), request('/test')])
+    expect(requestCount).toBe(2)
+  })
 })
