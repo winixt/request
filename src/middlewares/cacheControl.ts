@@ -268,7 +268,7 @@ export default () => {
 
       await next()
 
-      if (!canCache(ctx.response))
+      if (ctx.response && !canCache(ctx.response))
         console.warn(`request: ${ctx.config.url} 响应数据无法序列化，无法缓存，请移除相关配置`)
 
       if (!ctx.error && ctx.response && canCache(ctx.response)) {
