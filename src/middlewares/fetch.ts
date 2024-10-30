@@ -9,7 +9,7 @@ const timeoutPromise = (timeout: number) => {
         type: 'TIMEOUT',
         msg: '请求超时',
       })
-    }, timeout)
+    }, timeout || 10000)
   })
 }
 

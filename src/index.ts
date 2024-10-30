@@ -61,7 +61,6 @@ function getResponseInterceptor(config: Partial<Config> = {}) {
 
 export function createRequest(config?: Partial<Config>) {
   const defaultConfig: Partial<Config> = {
-    timeout: 10000,
     credentials: 'include',
     ...config,
   }
