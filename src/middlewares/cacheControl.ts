@@ -1,4 +1,4 @@
-import { isPlainObject, isString } from 'lodash-es'
+import { cloneDeep, isPlainObject, isString } from 'lodash-es'
 import type { CacheConfig, Context, NextFn } from '../interface'
 import { isURLSearchParams } from '../helpers'
 
@@ -95,7 +95,7 @@ class RamCache {
       this.data.delete(key)
       return null
     }
-    return result ? result.data : null
+    return result ? cloneDeep(result.data) : null
   }
 
   set(key: string, value: CacheData) {
