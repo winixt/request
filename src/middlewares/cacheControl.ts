@@ -109,7 +109,8 @@ class RamCache {
       return
     }
 
-    this.data.set(key, value)
+    // 防止值被外面变更
+    this.data.set(key, cloneDeep(value))
   }
 
   delete(key: string) {
