@@ -60,16 +60,18 @@ function getResponseInterceptor(config: Partial<Config> = {}) {
 }
 
 export function createRequest(config?: Partial<Config>) {
+  const scheduler = new Scheduler()
+  const _request = scheduler.use(methodMiddleware).use(formatURL).use(headersMiddleware).use(paramsMiddleware).use(genRequestKey).use(cacheControl()).use(preventRepeatReq()).use(fetchMiddleware).compose()
+
   const defaultConfig: Partial<Config> = {
     credentials: 'include',
     ...config,
   }
-  const scheduler = new Scheduler()
-  const request = scheduler.use(methodMiddleware).use(formatURL).use(headersMiddleware).use(paramsMiddleware).use(genRequestKey).use(cacheControl()).use(preventRepeatReq()).use(fetchMiddleware).compose()
 
-  const defaultRequestInterceptor = formatRequestInterceptor(getRequestInterceptor(defaultConfig))
-  const defaultResponseInterceptor = formatResponseInterceptor(getResponseInterceptor(defaultConfig))
-  return async <T = any>(url: string, data?: ParamsType | null, options?: Partial<Config>): Promise<RequestResponse<T>> => {
+  let defaultRequestInterceptor = formatRequestInterceptor(getRequestInterceptor(defaultConfig))
+  let defaultResponseInterceptor = formatResponseInterceptor(getResponseInterceptor(defaultConfig))
+
+  const request = async <T = any>(url: string, data?: ParamsType | null, options?: Partial<Config>): Promise<RequestResponse<T>> => {
     const ctx: Context = {
       config: {
         url,
@@ -98,7 +100,7 @@ export function createRequest(config?: Partial<Config>) {
         ctx.config.responseInterceptor = null
       }
 
-      return request(ctx).then(async () => {
+      return _request(ctx).then(async () => {
         if (ctx.response)
           return ctx.response
         if (!ctx.error.config)
@@ -113,4 +115,16 @@ export function createRequest(config?: Partial<Config>) {
       throw err
     }
   }
+
+  function setConfig(config: Partial<Config>) {
+    Object.assign(defaultConfig, {
+      ...config,
+    })
+    defaultRequestInterceptor = formatRequestInterceptor(getRequestInterceptor(defaultConfig))
+    defaultResponseInterceptor = formatResponseInterceptor(getResponseInterceptor(defaultConfig))
+  }
+
+  request.setConfig = setConfig
+
+  return request
 }
