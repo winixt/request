@@ -72,6 +72,11 @@ export function createRequest(config?: Partial<Config>) {
   let defaultResponseInterceptor = formatResponseInterceptor(getResponseInterceptor(defaultConfig))
 
   const request = async <T = any>(url: string, data?: ParamsType | null, options?: Partial<Config>): Promise<RequestResponse<T>> => {
+    if (typeof options === 'string') {
+      options = {
+        method: options,
+      }
+    }
     const ctx: Context = {
       config: {
         url,
