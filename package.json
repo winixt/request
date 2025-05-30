@@ -26,7 +26,8 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "dependencies": {
-    "lodash-es": "^4.17.21"
+    "lodash-es": "^4.17.21",
+    "safe-stable-stringify": "^2.5.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^0.35.3",

@@ -1,4 +1,5 @@
 import { isNumber, isPlainObject } from 'lodash-es'
+import stringify from 'safe-stable-stringify'
 import { isURLSearchParams } from '../helpers'
 import type { Context, NextFn, ParamsType } from '../interface'
 
@@ -14,7 +15,7 @@ const stringifyParams = (params: ParamsType) => {
     return params
 
   if (isPlainObject(params) || Array.isArray(params))
-    return JSON.stringify(params)
+    return stringify(params)
 
   return ''
 }
