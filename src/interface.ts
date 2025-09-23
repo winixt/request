@@ -15,6 +15,7 @@ export interface Config extends RequestInit {
   timeout?: number
   mergeRequest?: boolean
   responseType?: 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData'
+  defaultResponseType?: 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData'
   cacheData?: boolean | CacheConfig
   requestInterceptor?: RequestInterceptor | RequestInterceptor[]
   responseInterceptor?: ResponseInterceptor | ResponseInterceptor[]

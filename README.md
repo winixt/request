@@ -26,6 +26,7 @@ const config = {
   method: 'POST', // 默认 post
   mergeRequest: false, // 是否合并请求
   responseType: null, // 可选 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData'，默认根据 content-type 处理
+  defaultResponseType: null, // 可选 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData'，没有 content-type 又没有 responseType，默认 blob
   credentials: 'include', // 默认 include, 'include' | 'same-origin' | 'omit'
   headers: {}, // 传给服务器的 header
   cacheData: false, // 是否缓存

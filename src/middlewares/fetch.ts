@@ -69,6 +69,10 @@ function getResponseType(ctx: Context, contentType: string) {
   if (ctx.config.responseType)
     return ctx.config.responseType
 
+  if (!contentType) {
+    return ctx.config.defaultResponseType || 'blob'
+  }
+
   if (/application\/json/i.test(contentType))
     return 'json'
   else if (/text|xml/.test(contentType))
