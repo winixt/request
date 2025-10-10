@@ -85,6 +85,10 @@ function getResponseType(ctx: Context, contentType: string) {
 
 async function getResponseData(ctx: Context, res: Response) {
   const contentType = res.headers.get('content-type')
+  const contentLength = res.headers.get('content-length');
+  if (contentLength === '0') {
+    return null; // or null depending on your preference for no content handling
+  }
   try {
     const dataType = getResponseType(ctx, contentType)
     let data
