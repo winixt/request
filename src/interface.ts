@@ -6,9 +6,9 @@ export interface CacheConfig {
 
 export type ParamsType = string | Record<string, any> | Blob | File | FormData | ArrayBuffer | URLSearchParams | DataView
 
-export type RequestInterceptor = (config: Config, defaultInterceptor?: RequestInterceptor) => Promise<Config> | Config
-export type ResponseInterceptor = (response: RequestResponse, defaultInterceptor?: ResponseInterceptor) => Promise<RequestResponse> | RequestResponse
-export interface Config extends RequestInit {
+export type RequestInterceptor<T = any> = (config: Config<T>, defaultInterceptor?: RequestInterceptor<T>) => Promise<Config<T>> | Config<T>
+export type ResponseInterceptor<T = any> = (response: RequestResponse<T>, defaultInterceptor?: ResponseInterceptor<T>) => Promise<RequestResponse<T>> | RequestResponse<T>
+export interface Config<T = any> extends RequestInit {
   url: string
   params?: ParamsType
   baseURL?: string
@@ -17,11 +17,11 @@ export interface Config extends RequestInit {
   responseType?: 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData'
   defaultResponseType?: 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData'
   cacheData?: boolean | CacheConfig
-  requestInterceptor?: RequestInterceptor | RequestInterceptor[]
-  responseInterceptor?: ResponseInterceptor | ResponseInterceptor[]
-  requestInterceptors?: RequestInterceptor | RequestInterceptor[]
-  responseInterceptors?: ResponseInterceptor | ResponseInterceptor[]
-  transformData?: (data: any, response: RequestResponse) => any
+  requestInterceptor?: RequestInterceptor<T> | RequestInterceptor<T>[]
+  responseInterceptor?: ResponseInterceptor<T> | ResponseInterceptor<T>[]
+  requestInterceptors?: RequestInterceptor<T> | RequestInterceptor<T>[]
+  responseInterceptors?: ResponseInterceptor<T> | ResponseInterceptor<T>[]
+  transformData?: (data: any, response: RequestResponse<T>) => T
   errorHandler?: (error: any) => void
 }
 

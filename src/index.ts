@@ -24,10 +24,10 @@ function interceptorToArray<T>(interceptor: T | T[]) {
   return fns
 }
 
-function formatRequestInterceptor(requestInterceptor?: RequestInterceptor | RequestInterceptor[]) {
-  const fns = interceptorToArray<RequestInterceptor>(requestInterceptor)
+function formatRequestInterceptor<T = any>(requestInterceptor?: RequestInterceptor<T> | RequestInterceptor<T>[]) {
+  const fns = interceptorToArray<RequestInterceptor<T>>(requestInterceptor)
 
-  return async (config: Config, preRequestInterceptor?: RequestInterceptor) => {
+  return async (config: Config<T>, preRequestInterceptor?: RequestInterceptor<T>) => {
     let result = config
     for (const fn of fns)
       result = await fn(result, preRequestInterceptor)
@@ -36,13 +36,13 @@ function formatRequestInterceptor(requestInterceptor?: RequestInterceptor | Requ
   }
 }
 
-function formatResponseInterceptor(interceptor?: ResponseInterceptor | ResponseInterceptor[]) {
-  const fns = interceptorToArray<ResponseInterceptor>(interceptor)
+function formatResponseInterceptor<T = any>(interceptor?: ResponseInterceptor<T> | ResponseInterceptor<T>[]) {
+  const fns = interceptorToArray<ResponseInterceptor<T>>(interceptor)
 
   if (fns.length === 0)
     return null
 
-  return async (res: RequestResponse, preInterceptor?: ResponseInterceptor) => {
+  return async (res: RequestResponse<T>, preInterceptor?: ResponseInterceptor<T>) => {
     let result = res
     for (const fn of fns)
       result = await fn(result, preInterceptor)
@@ -51,11 +51,11 @@ function formatResponseInterceptor(interceptor?: ResponseInterceptor | ResponseI
   }
 }
 
-function getRequestInterceptor(config: Partial<Config> = {}) {
+function getRequestInterceptor<T = any>(config: Partial<Config<T>> = {}) {
   return config.requestInterceptor || config.requestInterceptors
 }
 
-function getResponseInterceptor(config: Partial<Config> = {}) {
+function getResponseInterceptor<T = any>(config: Partial<Config<T>> = {}) {
   return config.responseInterceptor || config.responseInterceptors
 }
 
@@ -71,7 +71,7 @@ export function createRequest(config?: Partial<Config>) {
   let defaultRequestInterceptor = formatRequestInterceptor(getRequestInterceptor(defaultConfig))
   let defaultResponseInterceptor = formatResponseInterceptor(getResponseInterceptor(defaultConfig))
 
-  const request = async <T = any>(url: string, data?: ParamsType | null, options?: Partial<Config>): Promise<RequestResponse<T>> => {
+  const request = async <T = any>(url: string, data?: ParamsType | null, options?: Partial<Config<T>>): Promise<RequestResponse<T>> => {
     if (typeof options === 'string') {
       options = {
         method: options,
@@ -87,15 +87,15 @@ export function createRequest(config?: Partial<Config>) {
     }
 
     try {
-      if (getRequestInterceptor(options))
-        ctx.config = await formatRequestInterceptor(getRequestInterceptor(options))(ctx.config, defaultRequestInterceptor)
+      if (getRequestInterceptor<T>(options))
+        ctx.config = await formatRequestInterceptor<T>(getRequestInterceptor<T>(options))(ctx.config, defaultRequestInterceptor as RequestInterceptor<T>)
       else if (getRequestInterceptor(defaultConfig))
         ctx.config = await defaultRequestInterceptor(ctx.config)
 
-      if (getResponseInterceptor(options)) {
-        ctx.config.responseInterceptor = (response: RequestResponse) => {
-          const interceptor = formatResponseInterceptor(getResponseInterceptor(options))
-          return interceptor(response, defaultResponseInterceptor)
+      if (getResponseInterceptor<T>(options)) {
+        ctx.config.responseInterceptor = (response: RequestResponse<T>) => {
+          const interceptor = formatResponseInterceptor<T>(getResponseInterceptor<T>(options))
+          return interceptor(response, defaultResponseInterceptor as ResponseInterceptor<T>)
         }
       }
       else if (defaultResponseInterceptor) {
@@ -107,7 +107,7 @@ export function createRequest(config?: Partial<Config>) {
 
       return _request(ctx).then(async () => {
         if (ctx.response)
-          return ctx.response
+          return ctx.response as RequestResponse<T>
         if (!ctx.error.config)
           ctx.error.config = ctx.config
 

@@ -1,5 +1,6 @@
 import { createRequest } from '../src/index'
 
+
 describe('baseURL test', () => {
   global.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
     const response = new Response(JSON.stringify({ url: input, headers: init?.headers }), {
