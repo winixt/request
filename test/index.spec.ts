@@ -109,3 +109,42 @@ describe('common param test', () => {
     }
   })
 })
+
+describe('get url append params test', () => {
+  const originalFetch = global.fetch
+  beforeEach(() => {
+    global.fetch = (input: RequestInfo | URL) => {
+      const response = new Response(JSON.stringify({ url: input }), {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+        },
+      })
+      return Promise.resolve(response)
+    }
+  })
+  afterEach(() => {
+    global.fetch = originalFetch
+  })
+  const request = createRequest({})
+
+  test('get: url without query', async () => {
+    const content = await request('/test', { a: 1 }, { method: 'get' })
+    expect(content.data.url).toBe('/test?a=1')
+  })
+
+  test('get: url already has query', async () => {
+    const content = await request('/test?foo=1', { a: 1 }, { method: 'get' })
+    expect(content.data.url).toBe('/test?foo=1&a=1')
+  })
+
+  test('get: url already has query, URLSearchParams params', async () => {
+    const content = await request('/test?foo=1', new URLSearchParams({ a: '1' }), { method: 'get' })
+    expect(content.data.url).toBe('/test?foo=1&a=1')
+  })
+
+  test('get: no params', async () => {
+    const content = await request('/test?foo=1', null, { method: 'get' })
+    expect(content.data.url).toBe('/test?foo=1')
+  })
+})
